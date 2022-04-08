@@ -1,0 +1,59 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: nova-customer-api
+spec:
+  ports:
+    - name: 80-tcp
+      protocol: TCP
+      port: 80
+      targetPort: 80
+  selector:
+    deployment: customer-api
+  type: ClusterIP
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nova-customer-api
+  labels:
+    app: customer-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: customer-api
+  template:
+    metadata:
+      labels:
+        deployment: customer-api
+    spec:
+      imagePullSecrets:
+      - name: harbor
+      containers:
+        - name: mapit
+          image: harborprdap01.anadoluhayat.com.tr/test/novacustomerapi:latest
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          env:
+          - name: ASPNETCORE_ENVIRONMENT
+            value: Development
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
