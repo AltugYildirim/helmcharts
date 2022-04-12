@@ -1,0 +1,50 @@
+parameters:
+- name: workingDirectory 
+  type: string 
+  default: ''
+- name: openshiftApiToken 
+  type: string 
+  default: ''
+- name: openshiftApiUrl 
+  type: string 
+  default: ''
+- name: appName 
+  type: string 
+  default: ''
+- name: valuesYamlPath 
+  type: string 
+  default: ''
+- name: environment
+  type: string
+  default: ''
+- name: InsisConnectionString
+  type: string
+  default: ''
+- name: namespace
+  type: string
+  default: ''
+- name: imageTag
+  type: string
+  default: 'latest'
+- name: imageName
+  type: string
+  default: ''
+- name: repoName
+  type: string
+  default: ''
+steps:
+- task: CmdLine@2
+  displayName: OpenShift Login
+  inputs:
+    script: |
+      oc login --insecure-skip-tls-verify --token '${{ parameters.openshiftApiToken }}' '${{ parameters.openshiftApiUrl }}'
+- task: CmdLine@2
+  displayName: Go to Chart Path
+  inputs:
+    script: |
+      cd ../../../HelmCharts/${{ parameters.appName }}"
+- task: CmdLine@2
+  displayName: Helm Upgrade
+  inputs:
+    script: |
+      helm upgrade '${{ parameters.appName }}' -f '${{ parameters.valuesYamlPath }}' ./ --set image.name='${{ parameters.imageName }}' --set image.${{ parameters.environment }}.tag='${{ parameters.imageTag }}' --set environment='${{ parameters.environment }}' --set image.${{ parameters.environment }}.repository='${{ parameters.repoName }}' -n ${{ parameters.namespace }}
