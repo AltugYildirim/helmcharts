@@ -1,0 +1,33 @@
+parameters:
+- name: workingDirectory 
+  type: string 
+  default: ''
+- name: harbor_password 
+  type: string 
+  default: ''
+- name: harbor_username
+  type: string 
+  default: ''
+- name: harbor_registry
+  type: string 
+  default: 'harborprdap01.anadoluhayat.com.tr'
+- name: environment 
+  type: string 
+  default: ''
+- name: appName 
+  type: string 
+  default: ''
+- name: imageTag 
+  type: string 
+  default: 'latest'
+- name: path 
+  type: string 
+  default: ''
+steps:
+- task: CmdLine@2
+  displayName: Container Build and Push
+  inputs:
+    script: |
+      docker build -t ${{ parameters.harbor_registry }}/${{ parameters.environment }}/${{ parameters.appName }}:${{ parameters.imageTag }} -f ${{ parameters.path }} .
+      docker login ${{ parameters.harbor_registry }} -u ${{ parameters.harbor_username }} -p '${{ parameters.harbor_password }}'
+      docker push ${{ parameters.harbor_registry }}/${{ parameters.environment }}/${{ parameters.appName }}:${{ parameters.imageTag }}
